@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400&display=swap" rel="stylesheet"> 
+    <title>異世界語族辞書</title>
+  　<style>
+      *{
+        font-family: "Times New Roman", "Noto Serif JP", serif;
+      }
+      .dialog{
+        width: 45vw;
+        background: #ffffff;
+        position: absolute;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px #cccccc;
+        left: 50vw;
+        top: 50vh;
+        transform: translate(-50%,-50%);
+        z-index: 100;
+      }
+      .number{
+        width: 4em;
+      }
+      span {
+        display: inline-block;
+        vertical-align: top;
+      }
+      .right{
+        position: relative;
+        margin-right: 0;
+      }
+      #idalert{
+        color: #ff0000;
+        visibility: hidden;
+      }
+      #headerleft{
+        position: fixed;
+        left: 2.5vw;
+        top: 5vh;
+        width: 30vw;
+        height: 25vh;
+        background: #afffaf;
+      }
+      #headerright{
+        position: fixed;
+        left: 32.5vw;
+        top: 5vh;
+        width: 15vw;
+        height: 25vh;
+        background: #afffaf;
+      }
+      #editor{
+        position: fixed;
+        top: 5vh;
+        left: 52.5vw;
+        width: 45vw;
+        height: 90vh;
+        background: #afffaf;
+      }
+      .inputarea{
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+      }
+      #cardlist{
+        display: inline-block;
+        position: absolute;
+        overflow: scroll;    
+        top: 30vh;
+        left: 25vw;
+        width: 45vw;
+        height: 65vh;                         
+        transform: translate(-50%,0)
+      }
+      .cardlist-line{
+        display: flex;
+      }
+      .card {
+        width: 45vw;
+        background: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px #cccccc;
+        margin-bottom: 20px;
+        margin-right: 20px;
+      }
+      .card-img {
+        border-radius: 5px 5px 0 0;
+        max-width: 100%;
+        height: auto;
+      }
+      .card-content {
+        padding: 20px;
+      }
+      .card-lemma {
+        font-size: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #333333;
+      }
+      .card-id,.card-language {
+        font-size: 15px;
+        margin-bottom: 20px;
+        color: #333333;
+      }
+      .card-meaning {
+        color: #333333;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .card-etymology {
+        color: #333333;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .card-link {
+        text-align: center;
+        border-top: 1px solid #eeeeee;
+        padding: 20px;
+      }
+      .card-link a {
+        text-decoration: none;
+        color: #00bbdd;
+        margin: 0 10px;
+      }
+      .card-link a:hover {
+        color: #0090aa;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <div class="dialog" id="deleting" hidden><p>削除中…</p></div> -->
+    <div id="headerleft">
+      <div  class="inputarea">保存場所：<button onclick="setpath();" id="setpath" class="right">参照</button>  ページあたりの語数：<input type="number" id="wpp" onkeyup="getcards();" onmouseup="getcards();" min="1" value="20" class="number"></div>
+      <div  class="inputarea">単語：<input type="text" id="sestr" onkeyup="getcards();" size="40"></div>
+      <div  class="inputarea">意味：<input type="text" id="semean" onkeyup="getcards();" size="40"></div>
+      <div  class="inputarea">言語：<select id="selang" onchange="getcards();"></select> <span class="right">順序：<select id="seord" onmouseup="getcards();">
+        <option value="alp">アルファベット順</option>
+        <option value="id">ID順</option>
+      </select></span>
+    </div>
+    <div id="headerright">
+      <div  class="inputarea">アルファベットの順序：<br><span><textarea id="alpord" onkeyup="editedalp();" rows="4" cols="20"></textarea></span></div>
+      <div  class="inputarea"><input type="number" id="pagenum" onkeyup="getcards();" onmouseup="getcards();" min="1" value="1" class="number"><span id="page-count"></span><br><span id="lemma-count"></span></div>
+      
+    </div>
+    <div>
+    <div id="cardlist"></div>
+    <div id="editor">
+      <div  class="inputarea">造語中の言語（新規単語のデフォルト言語）：<select id="deflang"></select> </div>
+      <div  class="inputarea">ID：<input type="number" id="edid" onchange="editedid();" size="10" > <span id="idalert" >IDが重複しています。</span>     <span class="right"><button onclick="newcard();">新規</button> <button onclick="deletecard(document.getElementById('edid').value);">削除</button></span></div>
+      <div  class="inputarea">単語：<input type="text" id="edstr"  onchange="edited(document.getElementById('edid').value);" size="40"></div>
+      <div  class="inputarea">意味：<span><textarea id="edmean" onchange="edited(document.getElementById('edid').value);" rows="3" cols="40"></textarea></span></div>   
+      <div  class="inputarea">その他：<span><textarea id="edfree" onchange="edited(document.getElementById('edid').value);" rows="3" cols="40"></textarea></span></div>     
+      <div  class="inputarea">言語：<input type="text" id="edlang" onchange="edited(document.getElementById('edid').value);" list="langset" size="10">
+      <datalist id="langset"></datalist></div>
+      <div  class="inputarea">語源候補：<span><textarea id="edetymcand" onchange="edited(document.getElementById('edid').value);" rows="5" cols="30" disabled></textarea></span><span>語源候補検索時に<br>同一視する文字<br>(改行区切り)：</span><span><textarea id="edetymident" onkeyup="editedident();" rows="5" cols="10"></textarea></span></div>
+      <div  class="inputarea">語源：<span id="edetym"><input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10"> <span id="edetym000str"></span><br></span></div>
+    <div>
+  </body>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+  <script> 
+    const ipcRenderer = window.api.ipcR;
+    const fs = window.api.fs;
+    const dialog = window.api.dialog;
+    let dataorig=[];
+    let variables={"alpord":"","ident":""};
+    let langset=new Set();
+    let path="";
+
+    function getJSON(){
+            // メインプロセスを呼び出し
+            let datar = ipcRenderer.invoke('file-open')
+              .then((data) => {
+                // キャンセルで閉じた
+                if( data.status === undefined ){
+                  return(false);
+                }
+                // ファイルが開けなかった
+                if( ! data.status ){
+                  alert(`ファイルが開けませんでした\n${data.message}`);
+                  return(false);
+                }
+          
+                // ファイルが無事に開けた
+                return data;
+              })
+              .catch((err) => {
+                alert(err);
+              });
+              return datar
+          
+    }
+
+    function setpath(){
+      getJSON()      
+      .then((dataretr)=> {
+      path=dataretr.path;
+      dataorig=dataretr.text.dictionary;
+      dataorig.sort((a,b)=>a.id-b.id);
+      variables=dataretr.text.variables
+      console.log(dataorig);
+      document.getElementById("edstr").disabled=true;
+      document.getElementById("edmean").disabled=true;
+      document.getElementById("edfree").disabled=true;
+      document.getElementById("edlang").disabled=true;
+      document.getElementById("edetym").innerHTML=`<input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10" disabled> <span id="edetym000str"></span><br>`
+      document.getElementById("edid").value="";
+      document.getElementById("edstr").value="";
+      document.getElementById("edmean").value="";
+      document.getElementById("edfree").value="";
+      document.getElementById("edlang").value="";
+      document.getElementById("edetymcand").value="";
+      langset=initialization();
+      getcards();
+    });
+      
+    }
+
+
+    function eqSet(as, bs) {
+      if (as.size !== bs.size) {return false};
+      for (var a of as) {if (!bs.has(a)) {return false}};
+      for (var b of bs) {if (!as.has(b)) {return false}};
+      return true;
+    }
+
+    function initialization(){
+      let langset2=new Set();
+      for (let i of dataorig){
+        langset2.add(i.language)
+      }
+      if (!eqSet(langset,langset2)){
+      document.getElementById("selang").innerHTML='<option value="all" selected>全て</option>';
+      document.getElementById("langset").innerHTML="";
+      document.getElementById("deflang").innerHTML="";
+      for (let langname of langset2){
+        document.getElementById("selang").innerHTML+=`<option value=${langname}>${langname}</option>`;
+        document.getElementById("deflang").innerHTML+=`<option value=${langname}>${langname}</option>`;
+        document.getElementById("langset").innerHTML+=`<option value=${langname}>${langname}</option>`
+      }
+      document.getElementById("langset").selectedIndex=0;
+      document.getElementById("deflang").selectedIndex=0;
+    }
+      return langset2
+    }
+
+
+    function selectc(id){
+      let z=dataorig[dataorig.findIndex(wd => wd.id==id)];
+      document.getElementById("edid").disabled=false;
+      document.getElementById("edfree").disabled=false;
+      document.getElementById("edstr").disabled=false;
+      document.getElementById("edmean").disabled=false;
+      document.getElementById("edlang").disabled=false;
+      document.getElementById("edid").value=id;
+      document.getElementById("edstr").value=z.lemma;
+      document.getElementById("edmean").value=z.meaning;
+      document.getElementById("edfree").value=z.free;
+      document.getElementById("edlang").value=z.language;
+      document.getElementById("edetymcand").value=searchetymcand(z.lemma);
+      let st="";
+      for (let i=0;i<=z.etymology.length;i++){
+        st+=`<input type="text" id="edetym${i.toString().padStart(3, '0')}" onchange="document.getElementById('edetym'+'${i.toString().padStart(3, '0')}'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10"> <span id="edetym${i.toString().padStart(3, '0')}str"></span><br>`
+      }
+      document.getElementById("edetym").innerHTML=st;
+      for (let i=0;i<z.etymology.length;i++){
+        document.getElementById(`edetym${i.toString().padStart(3, '0')}`).value=z.etymology[i];
+        document.getElementById(`edetym${i.toString().padStart(3, '0')}str`).innerHTML=etymexp(z.etymology[i]);
+      }
+      
+    }
+
+    function etymexp(id){
+      if (dataorig.findIndex(wd => wd.id==id)==-1){
+        return "";
+      }else{
+      let j=dataorig[dataorig.findIndex(wd => wd.id==id)];
+      let mean=j.meaning;
+      if (mean.length>10){
+        mean=mean.slice(0,10)+"...";
+      }
+      return `${j.language}: <a href="javascript:moveto('${j.id.toString().padStart(8, '0')}');" class="card-link">${j.lemma}</a> ${mean}<br>`;
+    }
+    }
+
+    function newcard(){
+      let smallest = 1;
+      let biggest=1;
+      let idlist=[];
+      for (let j of dataorig){
+        if (j.lang==document.getElementById("deflang").value){
+          idlist.push(j.id+0);
+        }
+        idlist.sort((a,b) => a-b);
+        biggest=Math.max(biggest,j.id+0)
+      }
+      if (idlist.length>0){
+        smallest=idlist[0];
+      }
+      
+      for (let ja=0;ja<idlist.length;ja++){
+        if(smallest==idlist[ja]){
+          smallest+=1
+        }
+      }
+
+      dataorig.push(
+        {
+          "id":biggest+1,
+          "lemma":"",
+          "meaning":"",
+          "free":"",
+          "language":document.getElementById("deflang").value,
+          "etymology":[]
+        }
+      );
+      if (path!=""){
+      window.api.setJSON(dataorig,variables,path);
+      dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
+      variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
+      langset=initialization();
+      getcards();
+      }
+      selectc(biggest+1);
+    }
+
+    function deletecard(id){
+      let val = ipcRenderer.invoke('del-confirm')
+      .then((value)=>{
+      if (value==0){
+        
+        let dataorig2=[];
+        for (let i of dataorig){
+          if (i.id!=id){
+            dataorig2.push(i);
+          }
+        }
+        dataorig=dataorig2;
+      document.getElementById("edid").disabled=true;
+      document.getElementById("edstr").disabled=true;
+      document.getElementById("edmean").disabled=true;
+      document.getElementById("edfree").disabled=true;
+      document.getElementById("edlang").disabled=true;
+      document.getElementById("edetym").innerHTML=`<input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10" disabled> <span id="edetym000str"></span><br>`
+      document.getElementById("edid").value="";
+      document.getElementById("edstr").value="";
+      document.getElementById("edmean").value="";
+      document.getElementById("edfree").value="";
+      document.getElementById("edlang").value="";
+      document.getElementById("edetymcand").value="";
+      if (path!=""){
+      window.api.setJSON(dataorig,variables,path);
+      dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
+      variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
+      langset=initialization();
+      getcards();
+      }
+    }})
+  }
+
+    function editedalp(){
+      variables.alpord=document.getElementById("alpord").value;
+      if (path!=""){
+      window.api.setJSON(dataorig,variables,path);
+      dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
+      variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
+      langset=initialization();
+      getcards();
+      }
+    }
+
+    function editedident(){
+      variables.ident=document.getElementById("edetymident").value;
+      if (path!=""){
+      window.api.setJSON(dataorig,variables,path);
+      dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
+      variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
+      langset=initialization();
+      getcards();
+      }
+    }
+
+    function editedid(){
+      let idinp=document.getElementById("edid").value;
+      let lminp=document.getElementById("edstr").value;
+      let lginp=document.getElementById("edlang").value;
+      let mninp=document.getElementById("edmean").value;
+      let idprev=dataorig[dataorig.findIndex(wd => wd.lemma==lminp && wd.language==lginp && wd.meaning==mninp)].id
+      if (dataorig.findIndex(wd => wd.id==idinp)!=-1){
+        document.getElementById("idalert").style.visibility="visible";
+      } else{
+      edited(idprev);
+      }
+    }
+
+    function nextfield(elemid) {
+      let parchi=document.getElementById(elemid).parentNode.children;
+        for (var i = 0; i < parchi.length; i++) {
+                if (parchi[i].id == elemid) {
+                    (parchi[i + 3] || parchi[0]).focus();
+                    break;
+            }
+        }
+        return;
+    }
+
+    function searchetymcand(str){
+      str=str+str;
+      let z="";
+      let identarr=document.getElementById("edetymident").value.split("\n");
+      for (let alp of identarr){
+        str=str.replace(new RegExp("["+alp+"]","gu"),alp.slice(0,1));
+      }
+      for (let i=0;i<dataorig.length;i++){
+        let lemma=dataorig[i].lemma;
+        for (let alp of identarr){
+          lemma=lemma.replace(new RegExp("["+alp+"]","gu"),alp.slice(0,1));
+        }
+        let re=new RegExp("[^"+variables.alpord+"]","gu");
+        let lemmare=new RegExp(lemma.replace(re,".+"),"gu");
+        if (lemmare.test(str) && dataorig[i].lemma.length>0){
+          let mean=dataorig[i].meaning;
+          if (mean.length>10){
+            mean=mean.slice(0,10)+"...";
+          }
+          z+=`${dataorig[i].id} ${dataorig[i].language}： ${dataorig[i].lemma} ${mean}\n`
+        }
+      }
+      return z
+    }
+
+    function edited(idprev){
+      let idnew=document.getElementById("edid").value;
+      document.getElementById("idalert").style.visibility="hidden";
+      let j=dataorig.findIndex(wd => wd.id==idprev);
+      console.log(j,idprev)
+      let etymid=[];
+      let i = 0
+      while (document.getElementById(`edetym${(i).toString().padStart(3, '0')}`)!=null){
+        if (dataorig.findIndex(wd => wd.id==document.getElementById(`edetym${i.toString().padStart(3, '0')}`).value)!=-1){
+        etymid.push(document.getElementById(`edetym${i.toString().padStart(3, '0')}`).value)
+        }
+        i=i+1;
+      }
+      if (idprev!=idnew){
+        for (let x of dataorig){
+          for (let jj=0; jj<x.etymology.length;jj++){
+            if (x.etymology[jj].toString()==idprev.toString()){
+              x.etymology[jj]=idnew.toString();
+            }
+          }
+        }
+      }
+      dataorig[j].id=idnew;
+      dataorig[j].lemma=document.getElementById("edstr").value;
+      dataorig[j].language=document.getElementById("edlang").value;
+      dataorig[j].meaning=document.getElementById("edmean").value;
+      dataorig[j].free=document.getElementById("edfree").value;
+      dataorig[j].etymology=etymid;
+      document.getElementById("edetymcand").value=searchetymcand(document.getElementById("edstr").value);
+      if(path!=""){
+        window.api.setJSON(dataorig,variables,path);
+        dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
+        variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
+        langset=initialization();
+        getcards();
+      }
+      selectc(idnew);
+    }
+
+    function getcards(){
+      let selang=document.getElementById("selang").value;
+      document.getElementById("alpord").value=variables.alpord;
+      document.getElementById("edetymident").value=variables.ident;
+      let data=[];
+      let sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
+      let semean=new RegExp("("+document.getElementById("semean").value+")","gu");
+      for (let k of dataorig){
+        sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
+        semean=new RegExp("("+document.getElementById("semean").value+")","gu");
+      if ((k.language==selang || selang=="all")
+        && semean.test(k.meaning) 
+        && sestr.test(k.lemma)){
+          data.push(k);
+        }
+      }
+             
+      
+      if (document.getElementById("seord").value=="alp"){
+      data.sort(function(ka, kb) {
+        let nameA = ka.lemma.toLowerCase(); // 大文字と小文字を無視する
+        let nameB = kb.lemma.toLowerCase(); // 大文字と小文字を無視する
+        
+        variables.alpord = document.getElementById("alpord").value;
+        let alpdic = {}
+        for (let i=0;i<variables.alpord.length;i++){
+          alpdic[variables.alpord.slice(i,i+1)]=i+1
+        }
+        let reg=new RegExp("[^"+variables.alpord+"]","gu")
+        nameA=nameA.replace(reg,variables.alpord.slice(0,1)*1000)
+        nameB=nameB.replace(reg,variables.alpord.slice(0,1)*1000)
+        if (nameA.length==0){
+          nameA=variables.alpord.slice(-1)*1000
+        }
+        if (nameB.length==0){
+          nameB=variables.alpord.slice(-1)*1000
+        }
+        if (nameA==nameB){
+            return 0
+        }
+        while (nameA.length*nameB.length>0){
+          
+          if (nameA.slice(0,1)!=nameB.slice(0,1)){
+            return alpdic[nameA.slice(0,1)]-alpdic[nameB.slice(0,1)];
+          }
+          else{
+            nameA=nameA.slice(1);
+            nameB=nameB.slice(1);
+          }
+        }
+        return nameA.length-nameB.length;
+      });
+      } else if (document.getElementById("seord").value=="id"){
+        data.sort((ka, kb) => ka.id-kb.id);
+      } 
+
+        
+
+      let l = data.length;
+      let wpp = document.getElementById("wpp").value;
+      let pmax=Math.max(1,Math.ceil(l/wpp));
+      document.getElementById("pagenum").max=pmax;
+      document.getElementById("pagenum").value=Math.min(document.getElementById("pagenum").value,pmax)
+      let cpl = 1;
+      let z = '';
+      let pn=document.getElementById("pagenum").value;
+      document.getElementById("page-count").innerHTML=`/${pmax}ページ`
+      document.getElementById("lemma-count").innerHTML=`計${l}語`;
+      let idlist=[];
+      for (let i1=0;i1<l;i1++){
+          idlist.push(data[i1].id)
+      }
+      for (let i2=wpp*(pn-1);i2<l&&i2<wpp*pn;i2++){
+          let idn = idlist[i2];
+          let lang = data[i2].language;
+          let lemma = data[i2].lemma;
+          let mean = data[i2].meaning;
+          let free = data[i2].free;
+          if (document.getElementById("sestr").value!=""){
+            lemma = lemma.replace(sestr,"<mark>$1</mark>");
+          } 
+          if (document.getElementById("semean").value!=""){
+            mean = mean.replace(semean,"<mark>$1</mark>");
+          } 
+          let etymid = data[i2].etymology;
+          let etymstr = ``;
+          for (let id of etymid){
+          etymstr+=etymexp(id);
+          }
+          
+          let sec = `<section class="card">
+          <div class="card-content" id="card${idlist[i2].toString().padStart(8, '0')}">
+              <h2 class="card-id" id="id${idlist[i2].toString().padStart(8, '0')}">ID：${idn}</h2>
+              <h2 class="card-language" id="language${idlist[i2].toString().padStart(8, '0')}">言語：${lang}</h2>
+              <h1 class="card-lemma card-link" id="lemma${idlist[i2].toString().padStart(8, '0')}" onclick="selectc(${idlist[i2]});">${lemma}</h1>
+              <p class="card-meaning" id="meaning${idlist[i2].toString().padStart(8, '0')}">意味：${mean}</p>
+              <p class="card-meaning" id="free${idlist[i2].toString().padStart(8, '0')}">その他：${free}</p>
+              <p class="card-etymology" id="etymology${idlist[i2].toString().padStart(8, '0')}">語源：${etymstr}</p>
+          </div>
+          </section>`;
+          if (i2%cpl==0){
+          z+='<div class="cardlist-line">\n';
+          }
+          z+=sec;
+          if (i2%cpl==cpl-1 | i2==l-1){
+          z+='</div>\n';
+          }
+      }
+      document.getElementById("cardlist").innerHTML=z
+      return data
+    }
+
+    function moveto(idstr){
+      document.getElementById("sestr").value="";
+      document.getElementById("semean").value="";
+      document.getElementById("selang").value="all";
+      let data=getcards();
+      let posit=0;
+      for (let i=0;i<data.length;i++){
+          if (data[i].id==Number(idstr)+0){
+            posit=i;
+          }
+      }
+      console.log(posit,data[posit])
+      let wpp = document.getElementById("wpp").value;
+      document.getElementById("pagenum").value= Math.floor(posit/wpp)+1;
+      getcards();
+
+
+      // スクロールの速度
+      let speed = 400; // ミリ秒
+      // 移動先を数値で取得
+      let position = $('#card'+idstr).position().top;
+      let sh = $('#cardlist').scrollTop();
+      let pos = sh+position;
+      
+      console.log($('#card'+idstr),pos);
+      // スムーススクロール
+      jQuery('#cardlist').animate({scrollTop: pos}, speed, 'swing');
+      return false;
+   
+      // window.location.hash="card"+idstr;
+    }
+    window.onload=function(){
+      langset=initialization();
+      getcards();
+    }
+  </script>
+</html>

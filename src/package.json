@@ -1,0 +1,42 @@
+{
+  "name": "customdictionary",
+  "version": "0.0.1",
+  "main": "main.js",
+  "description": "custom dictionary",
+  "author": "PolinaBalanyeva",
+  "build": {
+    "appId": "com.electron.yourapp",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "assets",
+      "src",
+      "package.json",
+      "main.js",
+      "index.html",
+      "package-lock.json",
+      "preload.js"
+    ],
+    "mac": {
+      "icon": "assets/mac/icon_mac.icns",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "icon": "assets/win/icon_win.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "extends": null
+  },
+  "devDependencies": {
+    "node": "^14.16.0",
+    "electron": "13.1.7",
+    "electron-builder": "^22.11.7"
+  }
+}
