@@ -117,8 +117,6 @@
       }
       .card-link {
         text-align: center;
-        border-top: 1px solid #eeeeee;
-        padding: 20px;
       }
       .card-link a {
         text-decoration: none;
@@ -149,7 +147,7 @@
     <div>
     <div id="cardlist"></div>
     <div id="editor">
-      <div  class="inputarea">造語中の言語（新規単語のデフォルト言語）：<select id="deflang"></select> </div>
+      <div  class="inputarea">造語中の言語（新規単語のデフォルト言語）：<select id="deflang"><option value=""></option></select> </div>
       <div  class="inputarea">ID：<input type="number" id="edid" onchange="editedid();" size="10" > <span id="idalert" >IDが重複しています。</span>     <span class="right"><button onclick="newcard();">新規</button> <button onclick="deletecard(document.getElementById('edid').value);">削除</button></span></div>
       <div  class="inputarea">単語：<input type="text" id="edstr"  onchange="edited(document.getElementById('edid').value);" size="40"></div>
       <div  class="inputarea">意味：<span><textarea id="edmean" onchange="edited(document.getElementById('edid').value);" rows="3" cols="40"></textarea></span></div>   
@@ -197,10 +195,12 @@
     function setpath(){
       getJSON()      
       .then((dataretr)=> {
+        console.log(dataretr)
       path=dataretr.path;
+      if ("dictionary" in dataretr.text && "variables" in dataretr.text){
       dataorig=dataretr.text.dictionary;
       dataorig.sort((a,b)=>a.id-b.id);
-      variables=dataretr.text.variables
+      variables=dataretr.text.variables}
       console.log(dataorig);
       document.getElementById("edstr").disabled=true;
       document.getElementById("edmean").disabled=true;
@@ -288,7 +288,7 @@
 
     function newcard(){
       let smallest = 1;
-      let biggest=1;
+      let biggest=0;
       let idlist=[];
       for (let j of dataorig){
         if (j.lang==document.getElementById("deflang").value){
