@@ -7,7 +7,7 @@
   "build": {
     "appId": "com.electron.yourapp",
     "directories": {
-      "output": "dist"
+      "output": "../../customdictionary_pkg"
     },
     "files": [
       "assets",
