@@ -99,6 +99,7 @@
         margin-bottom: 20px;
         text-align: center;
         color: #333333;
+        padding: 20px;
       }
       .card-id,.card-language {
         font-size: 15px;
@@ -565,7 +566,7 @@
           <div class="card-content" id="card${idlist[i2].toString().padStart(8, '0')}">
               <h2 class="card-id" id="id${idlist[i2].toString().padStart(8, '0')}">ID：${idn}</h2>
               <h2 class="card-language" id="language${idlist[i2].toString().padStart(8, '0')}">言語：${lang}</h2>
-              <h1 class="card-lemma card-link" id="lemma${idlist[i2].toString().padStart(8, '0')}" onclick="selectc(${idlist[i2]});">${lemma}</h1>
+              <h1 class="card-lemma" id="lemma${idlist[i2].toString().padStart(8, '0')}" onclick="selectc(${idlist[i2]});">${lemma}</h1>
               <p class="card-meaning" id="meaning${idlist[i2].toString().padStart(8, '0')}">意味：${mean}</p>
               <p class="card-meaning" id="free${idlist[i2].toString().padStart(8, '0')}">その他：${free}</p>
               <p class="card-etymology" id="etymology${idlist[i2].toString().padStart(8, '0')}">語源：${etymstr}</p>
