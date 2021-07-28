@@ -41,7 +41,7 @@
         left: 2.5vw;
         top: 5vh;
         width: 30vw;
-        height: 25vh;
+        height: 35vh;
         background: #afffaf;
       }
       #headerright{
@@ -49,7 +49,7 @@
         left: 32.5vw;
         top: 5vh;
         width: 15vw;
-        height: 25vh;
+        height: 35vh;
         background: #afffaf;
       }
       #editor{
@@ -69,10 +69,10 @@
         display: inline-block;
         position: absolute;
         overflow: scroll;    
-        top: 30vh;
+        top: 40vh;
         left: 25vw;
         width: 45vw;
-        height: 65vh;                         
+        height: 55vh;                         
         transform: translate(-50%,0)
       }
       .cardlist-line{
@@ -134,7 +134,8 @@
     <div id="headerleft">
       <div  class="inputarea">保存場所：<button onclick="setpath();" id="setpath" class="right">参照</button>  ページあたりの語数：<input type="number" id="wpp" onkeyup="getcards();" onmouseup="getcards();" min="1" value="20" class="number"></div>
       <div  class="inputarea">単語：<input type="text" id="sestr" onkeyup="getcards();" size="40"></div>
-      <div  class="inputarea">意味：<input type="text" id="semean" onkeyup="getcards();" size="40"></div>
+      <div  class="inputarea">意味・その他：<input type="text" id="semean" onkeyup="getcards();" size="30"></div>
+      <div  class="inputarea">語源：<input type="number" id="seetym" onkeyup="getcards();" onmouseup="getcards();" min="1"></div>
       <div  class="inputarea">言語：<select id="selang" onchange="getcards();"></select> <span class="right">順序：<select id="seord" onmouseup="getcards();">
         <option value="alp">アルファベット順</option>
         <option value="id">ID順</option>
@@ -479,12 +480,14 @@
       let data=[];
       let sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
       let semean=new RegExp("("+document.getElementById("semean").value+")","gu");
+      let seetym=document.getElementById("seetym").value;
       for (let k of dataorig){
         sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
         semean=new RegExp("("+document.getElementById("semean").value+")","gu");
       if ((k.language==selang || selang=="all")
         && semean.test(k.meaning) 
-        && sestr.test(k.lemma)){
+        && (sestr.test(k.lemma) || sestr.test(k.free))
+        && (k.etymology.includes(seetym) || seetym=="")){
           data.push(k);
         }
       }
