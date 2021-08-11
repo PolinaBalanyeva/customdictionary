@@ -297,7 +297,7 @@
           idlist.push(j.id+0);
         }
         idlist.sort((a,b) => a-b);
-        biggest=Math.max(biggest,j.id+0)
+        biggest=Math.max(biggest,Number(j.id))
       }
       if (idlist.length>0){
         smallest=idlist[0];
@@ -311,7 +311,7 @@
 
       dataorig.push(
         {
-          "id":biggest+1,
+          "id":Number(biggest)+1,
           "lemma":"",
           "meaning":"",
           "free":"",
@@ -326,7 +326,7 @@
       langset=initialization();
       getcards();
       }
-      selectc(biggest+1);
+      selectc(Number(biggest)+1);
     }
 
     function deletecard(id){
