@@ -485,35 +485,37 @@
         sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
         semean=new RegExp("("+document.getElementById("semean").value+")","gu");
       if ((k.language==selang || selang=="all")
-        && semean.test(k.meaning) 
-        && (sestr.test(k.lemma) || sestr.test(k.free))
+        &&  (sestr.test(k.lemma) || document.getElementById("sestr").value=="")
+        && (semean.test(k.meaning) || semean.test(k.free))
         && (k.etymology.includes(seetym) || seetym=="")){
           data.push(k);
         }
       }
-             
+      variables.alpord = document.getElementById("alpord").value;
+        let alpdic = {};
+        for (let i=0;i<variables.alpord.length;i++){
+          alpdic[variables.alpord.slice(i,i+1)]=i+1;
+        }       
       
       if (document.getElementById("seord").value=="alp"){
       data.sort(function(ka, kb) {
         let nameA = ka.lemma.toLowerCase(); // 大文字と小文字を無視する
         let nameB = kb.lemma.toLowerCase(); // 大文字と小文字を無視する
         
-        variables.alpord = document.getElementById("alpord").value;
-        let alpdic = {}
-        for (let i=0;i<variables.alpord.length;i++){
-          alpdic[variables.alpord.slice(i,i+1)]=i+1
-        }
-        let reg=new RegExp("[^"+variables.alpord+"]","gu")
-        nameA=nameA.replace(reg,variables.alpord.slice(0,1)*1000)
-        nameB=nameB.replace(reg,variables.alpord.slice(0,1)*1000)
         if (nameA.length==0){
-          nameA=variables.alpord.slice(-1)*1000
+          nameA=variables.alpord.slice(-1).repeat(10);
         }
         if (nameB.length==0){
-          nameB=variables.alpord.slice(-1)*1000
+          nameB=variables.alpord.slice(-1).repeat(10);
         }
+        let reg=new RegExp("[^"+variables.alpord+"]","gu");
+        nameA=nameA.replace(reg,variables.alpord.slice(0,1).repeat(10));
+        reg=new RegExp("[^"+variables.alpord+"]","gu");
+        nameB=nameB.replace(reg,variables.alpord.slice(0,1).repeat(10));
+        
         if (nameA==nameB){
-            return 0
+          
+            return 0;
         }
         while (nameA.length*nameB.length>0){
           
@@ -591,10 +593,11 @@
       document.getElementById("sestr").value="";
       document.getElementById("semean").value="";
       document.getElementById("selang").value="all";
+      document.getElementById("seetym").value="";
       let data=getcards();
       let posit=0;
       for (let i=0;i<data.length;i++){
-          if (data[i].id==Number(idstr)+0){
+          if (Number(data[i].id)==Number(idstr)){
             posit=i;
           }
       }
@@ -602,7 +605,6 @@
       let wpp = document.getElementById("wpp").value;
       document.getElementById("pagenum").value= Math.floor(posit/wpp)+1;
       getcards();
-
 
       // スクロールの速度
       let speed = 400; // ミリ秒
