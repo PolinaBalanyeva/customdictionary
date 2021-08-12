@@ -493,6 +493,7 @@
       }
       variables.alpord = document.getElementById("alpord").value;
         let alpdic = {};
+        alpdic[" "]=0
         for (let i=0;i<variables.alpord.length;i++){
           alpdic[variables.alpord.slice(i,i+1)]=i+1;
         }       
@@ -509,9 +510,9 @@
           nameB=variables.alpord.slice(-1).repeat(10);
         }
         let reg=new RegExp("[^"+variables.alpord+"]","gu");
-        nameA=nameA.replace(reg,variables.alpord.slice(0,1).repeat(10));
+        nameA=nameA.replace(reg,"          ");
         reg=new RegExp("[^"+variables.alpord+"]","gu");
-        nameB=nameB.replace(reg,variables.alpord.slice(0,1).repeat(10));
+        nameB=nameB.replace(reg,"          ");
         
         if (nameA==nameB){
           
