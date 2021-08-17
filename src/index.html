@@ -236,10 +236,23 @@
     }
 
     function initialization(){
+      let lv=document.getElementById("selang").value;
+      let dv=document.getElementById("deflang").value;
+      let pv=document.getElementById("sepos").value;
       let langset2=new Set();
       for (let i of dataorig){
         langset2.add(i.language)
       }
+      if (lv==""){
+        lv="all";
+      }
+      if (pv==""){
+        pv="all";
+      }
+      if (dv=="" && langset.length>0){
+        dv=Array.from(langset2)[0];
+      }
+      
       if (!eqSet(langset,langset2)){
       document.getElementById("selang").innerHTML='<option value="all" selected>全て</option>';
       document.getElementById("langset").innerHTML="";
@@ -249,8 +262,8 @@
         document.getElementById("deflang").innerHTML+=`<option value=${langname}>${langname}</option>`;
         document.getElementById("langset").innerHTML+=`<option value=${langname}>${langname}</option>`;
       }
-      document.getElementById("langset").selectedIndex=0;
-      document.getElementById("deflang").selectedIndex=0;
+      document.getElementById("selang").value=lv;
+      document.getElementById("deflang").value=dv;
       }
       let posset2=new Set();
       for (let i of dataorig){
@@ -263,7 +276,7 @@
         document.getElementById("sepos").innerHTML+=`<option value=${posname}>${posname}</option>`;
         document.getElementById("posset").innerHTML+=`<option value=${posname}>${posname}</option>`;
       }
-      document.getElementById("posset").selectedIndex=0;
+      document.getElementById("sepos").value=pv;
     }
       return [langset2,posset2]
     }
@@ -653,11 +666,11 @@
       // 移動先を数値で取得
       let position = $('#card'+idstr).position().top;
       let sh = $('#cardlist').scrollTop();
-      let pos = sh+position;
+      let posi = sh+position;
       
-      console.log($('#card'+idstr),pos);
+      console.log($('#card'+idstr),posi);
       // スムーススクロール
-      jQuery('#cardlist').animate({scrollTop: pos}, speed, 'swing');
+      jQuery('#cardlist').animate({scrollTop: posi}, speed, 'swing');
       return false;
    
       // window.location.hash="card"+idstr;
