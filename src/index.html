@@ -136,7 +136,8 @@
       <div  class="inputarea">単語：<input type="text" id="sestr" onkeyup="getcards();" size="40"></div>
       <div  class="inputarea">意味・その他：<input type="text" id="semean" onkeyup="getcards();" size="30"></div>
       <div  class="inputarea">語源：<input type="number" id="seetym" onkeyup="getcards();" onmouseup="getcards();" min="1"></div>
-      <div  class="inputarea">言語：<select id="selang" onchange="getcards();"></select> <span class="right">順序：<select id="seord" onmouseup="getcards();">
+      <div  class="inputarea">言語：<select id="selang" onchange="getcards();"></select> <span class="right">品詞：<select id="sepos" onchange="getcards();"></select></span></div>
+      <div  class="inputarea"><span class="right">順序：<select id="seord" onmouseup="getcards();">
         <option value="alp">アルファベット順</option>
         <option value="id">ID順</option>
       </select></span>
@@ -155,7 +156,9 @@
       <div  class="inputarea">意味：<span><textarea id="edmean" onchange="edited(document.getElementById('edid').value);" rows="3" cols="40"></textarea></span></div>   
       <div  class="inputarea">その他：<span><textarea id="edfree" onchange="edited(document.getElementById('edid').value);" rows="3" cols="40"></textarea></span></div>     
       <div  class="inputarea">言語：<input type="text" id="edlang" onchange="edited(document.getElementById('edid').value);" list="langset" size="10">
-      <datalist id="langset"></datalist></div>
+      <datalist id="langset"></datalist>
+      <span class="right">品詞：<input type="text" id="edpos" onchange="edited(document.getElementById('edid').value);" list="posset" size="10">
+      <datalist id="posset"></datalist></span></div>
       <div  class="inputarea">語源候補：<span><textarea id="edetymcand" onchange="edited(document.getElementById('edid').value);" rows="5" cols="30" disabled></textarea></span><span>語源候補検索時に<br>同一視する文字<br>(改行区切り)：</span><span><textarea id="edetymident" onkeyup="editedident();" rows="5" cols="10"></textarea></span></div>
       <div  class="inputarea">語源：<span id="edetym"><input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10"> <span id="edetym000str"></span><br></span></div>
     <div>
@@ -168,6 +171,7 @@
     let dataorig=[];
     let variables={"alpord":"","ident":""};
     let langset=new Set();
+    let posset=new Set();
     let path="";
 
     function getJSON(){
@@ -208,12 +212,14 @@
       document.getElementById("edmean").disabled=true;
       document.getElementById("edfree").disabled=true;
       document.getElementById("edlang").disabled=true;
+      document.getElementById("edpos").disabled=true;
       document.getElementById("edetym").innerHTML=`<input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10" disabled> <span id="edetym000str"></span><br>`
       document.getElementById("edid").value="";
       document.getElementById("edstr").value="";
       document.getElementById("edmean").value="";
       document.getElementById("edfree").value="";
       document.getElementById("edlang").value="";
+      document.getElementById("edpos").value="";
       document.getElementById("edetymcand").value="";
       langset=initialization();
       getcards();
@@ -241,12 +247,25 @@
       for (let langname of langset2){
         document.getElementById("selang").innerHTML+=`<option value=${langname}>${langname}</option>`;
         document.getElementById("deflang").innerHTML+=`<option value=${langname}>${langname}</option>`;
-        document.getElementById("langset").innerHTML+=`<option value=${langname}>${langname}</option>`
+        document.getElementById("langset").innerHTML+=`<option value=${langname}>${langname}</option>`;
       }
       document.getElementById("langset").selectedIndex=0;
       document.getElementById("deflang").selectedIndex=0;
+      }
+      let posset2=new Set();
+      for (let i of dataorig){
+        posset2.add(i.pos)
+      }
+      if (!eqSet(posset,posset2)){
+      document.getElementById("sepos").innerHTML='<option value="all" selected>全て</option>';
+      document.getElementById("posset").innerHTML="";
+      for (let posname of posset2){
+        document.getElementById("sepos").innerHTML+=`<option value=${posname}>${posname}</option>`;
+        document.getElementById("posset").innerHTML+=`<option value=${posname}>${posname}</option>`;
+      }
+      document.getElementById("posset").selectedIndex=0;
     }
-      return langset2
+      return [langset2,posset2]
     }
 
 
@@ -257,11 +276,13 @@
       document.getElementById("edstr").disabled=false;
       document.getElementById("edmean").disabled=false;
       document.getElementById("edlang").disabled=false;
+      document.getElementById("edpos").disabled=false;
       document.getElementById("edid").value=id;
       document.getElementById("edstr").value=z.lemma;
       document.getElementById("edmean").value=z.meaning;
       document.getElementById("edfree").value=z.free;
       document.getElementById("edlang").value=z.language;
+      document.getElementById("edpos").value=z.pos;
       document.getElementById("edetymcand").value=searchetymcand(z.lemma);
       let st="";
       for (let i=0;i<=z.etymology.length;i++){
@@ -316,6 +337,7 @@
           "meaning":"",
           "free":"",
           "language":document.getElementById("deflang").value,
+          "pos":"",
           "etymology":[]
         }
       );
@@ -323,7 +345,9 @@
       window.api.setJSON(dataorig,variables,path);
       dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
       variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
-      langset=initialization();
+      let langpos=initialization();
+      langset=langpos[0];
+      posset=langpos[1];
       getcards();
       }
       selectc(Number(biggest)+1);
@@ -346,18 +370,22 @@
       document.getElementById("edmean").disabled=true;
       document.getElementById("edfree").disabled=true;
       document.getElementById("edlang").disabled=true;
+      document.getElementById("edpos").disabled=true;
       document.getElementById("edetym").innerHTML=`<input type="text" id="edetym000" onchange="document.getElementById('edetym'+'000'+'str').innerHTML=etymexp(this.value);edited(document.getElementById('edid').value);nextfield(this.id);" size="10" disabled> <span id="edetym000str"></span><br>`
       document.getElementById("edid").value="";
       document.getElementById("edstr").value="";
       document.getElementById("edmean").value="";
       document.getElementById("edfree").value="";
       document.getElementById("edlang").value="";
+      document.getElementById("edpos").value="";
       document.getElementById("edetymcand").value="";
       if (path!=""){
       window.api.setJSON(dataorig,variables,path);
       dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
       variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
-      langset=initialization();
+      let langpos=initialization();
+      langset=langpos[0];
+      posset=langpos[1];
       getcards();
       }
     }})
@@ -369,7 +397,9 @@
       window.api.setJSON(dataorig,variables,path);
       dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
       variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
-      langset=initialization();
+      let langpos=initialization();
+      langset=langpos[0];
+      posset=langpos[1];
       getcards();
       }
     }
@@ -380,7 +410,9 @@
       window.api.setJSON(dataorig,variables,path);
       dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
       variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
-      langset=initialization();
+      let langpos=initialization();
+      langset=langpos[0];
+      posset=langpos[1];
       getcards();
       }
     }
@@ -389,8 +421,9 @@
       let idinp=document.getElementById("edid").value;
       let lminp=document.getElementById("edstr").value;
       let lginp=document.getElementById("edlang").value;
+      let posinp=document.getElementById("edpos").value;
       let mninp=document.getElementById("edmean").value;
-      let idprev=dataorig[dataorig.findIndex(wd => wd.lemma==lminp && wd.language==lginp && wd.meaning==mninp)].id
+      let idprev=dataorig[dataorig.findIndex(wd => wd.lemma==lminp && wd.language==lginp && wd.pos==posinp && wd.meaning==mninp)].id
       if (dataorig.findIndex(wd => wd.id==idinp)!=-1){
         document.getElementById("idalert").style.visibility="visible";
       } else{
@@ -459,6 +492,7 @@
       dataorig[j].id=idnew;
       dataorig[j].lemma=document.getElementById("edstr").value;
       dataorig[j].language=document.getElementById("edlang").value;
+      dataorig[j].pos=document.getElementById("edpos").value;
       dataorig[j].meaning=document.getElementById("edmean").value;
       dataorig[j].free=document.getElementById("edfree").value;
       dataorig[j].etymology=etymid;
@@ -467,7 +501,9 @@
         window.api.setJSON(dataorig,variables,path);
         dataorig=JSON.parse(fs.readFileSync(path,"utf8")).dictionary;
         variables=JSON.parse(fs.readFileSync(path,"utf8")).variables;
-        langset=initialization();
+        let langpos=initialization();
+        langset=langpos[0];
+        posset=langpos[1];
         getcards();
       }
       selectc(idnew);
@@ -475,6 +511,7 @@
 
     function getcards(){
       let selang=document.getElementById("selang").value;
+      let sepos=document.getElementById("sepos").value;
       document.getElementById("alpord").value=variables.alpord;
       document.getElementById("edetymident").value=variables.ident;
       let data=[];
@@ -485,6 +522,7 @@
         sestr=new RegExp("("+document.getElementById("sestr").value+")","gu");
         semean=new RegExp("("+document.getElementById("semean").value+")","gu");
       if ((k.language==selang || selang=="all")
+        &&  (k.pos==sepos || sepos=="all")
         &&  (sestr.test(k.lemma) || document.getElementById("sestr").value=="")
         && (semean.test(k.meaning) || semean.test(k.free))
         && (k.etymology.includes(seetym) || seetym=="")){
@@ -553,6 +591,7 @@
       for (let i2=wpp*(pn-1);i2<l&&i2<wpp*pn;i2++){
           let idn = idlist[i2];
           let lang = data[i2].language;
+          let pos = data[i2].pos;
           let lemma = data[i2].lemma;
           let mean = data[i2].meaning;
           let free = data[i2].free;
@@ -572,6 +611,7 @@
           <div class="card-content" id="card${idlist[i2].toString().padStart(8, '0')}">
               <h2 class="card-id" id="id${idlist[i2].toString().padStart(8, '0')}">ID：${idn}</h2>
               <h2 class="card-language" id="language${idlist[i2].toString().padStart(8, '0')}">言語：${lang}</h2>
+              <h2 class="card-language" id="pos${idlist[i2].toString().padStart(8, '0')}">品詞：${pos}</h2>
               <h1 class="card-lemma" id="lemma${idlist[i2].toString().padStart(8, '0')}" onclick="selectc(${idlist[i2]});">${lemma}</h1>
               <p class="card-meaning" id="meaning${idlist[i2].toString().padStart(8, '0')}">意味：${mean}</p>
               <p class="card-meaning" id="free${idlist[i2].toString().padStart(8, '0')}">その他：${free}</p>
@@ -594,6 +634,7 @@
       document.getElementById("sestr").value="";
       document.getElementById("semean").value="";
       document.getElementById("selang").value="all";
+      document.getElementById("sepos").value="all";
       document.getElementById("seetym").value="";
       let data=getcards();
       let posit=0;
@@ -622,7 +663,9 @@
       // window.location.hash="card"+idstr;
     }
     window.onload=function(){
-      langset=initialization();
+      let langpos=initialization();
+      langset=langpos[0];
+      posset=langpos[1];
       getcards();
     }
   </script>
