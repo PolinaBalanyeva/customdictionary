@@ -139,6 +139,7 @@
       <div  class="inputarea">言語：<select id="selang" onchange="getcards();"></select> <span class="right">品詞：<select id="sepos" onchange="getcards();"></select></span></div>
       <div  class="inputarea"><span class="right">順序：<select id="seord" onmouseup="getcards();">
         <option value="alp">アルファベット順</option>
+        <option value="mng">意味順</option>
         <option value="id">ID順</option>
       </select></span>
     </div>
@@ -173,6 +174,8 @@
     let langset=new Set();
     let posset=new Set();
     let path="";
+    const compare = window.api.jc;
+    console.log(compare)
 
     function getJSON(){
             // メインプロセスを呼び出し
@@ -542,6 +545,17 @@
           data.push(k);
         }
       }
+      mng=[];
+      for (let i=0;i<data.length;i++){
+        let regex=new RegExp("[（\(].*[\)）]","gu");
+        mng.push(data[i].meaning.replace(regex,""))
+      }
+      const comp=compare(mng);
+      mngs=mng.sort(comp)
+      mngo={}
+      for (let i=0;i<data.length;i++){
+        mngo[mngs[i]]=i
+      }
       variables.alpord = document.getElementById("alpord").value;
         let alpdic = {};
         alpdic[" "]=0
@@ -582,7 +596,13 @@
         return nameA.length-nameB.length;
       });
       } else if (document.getElementById("seord").value=="id"){
-        data.sort((ka, kb) => ka.id-kb.id);
+        data.sort((ka, kb) => {return ka.id-kb.id});
+      } else if (document.getElementById("seord").value=="mng"){
+        data.sort((ka, kb) => {
+          let regex1=new RegExp("[（\(].*[\)）]","gu");
+          let regex2=new RegExp("[（\(].*[\)）]","gu");
+            return comp(ka.meaning.replace(regex1,""),kb.meaning.replace(regex2,""))
+        });
       } 
 
         

@@ -13,6 +13,7 @@
       "assets",
       "src",
       "package.json",
+      "japanese-comparator.js",
       "main.js",
       "index.html",
       "package-lock.json",
@@ -37,6 +38,14 @@
   "devDependencies": {
     "node": "^14.16.0",
     "electron": "13.1.7",
-    "electron-builder": "^22.11.7"
+    "electron-builder": "^22.11.7",
+    "encoding-japanese": "^1.0.30",
+    "is-windows": "^1.0.2",
+    "mecab-lite": "0.0.8"
+  },
+  "dependencies": {
+    "encoding-japanese": "^1.0.30",
+    "is-windows": "^1.0.2",
+    "mecab-lite": "0.0.8"
   }
 }
