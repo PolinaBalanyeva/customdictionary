@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld(
         fs: fs,
         setJSON: (stringdata,variables,path) => {
             if (path!=""){
-            fs.writeFileSync(path,JSON.stringify({"dictionary":stringdata,"variables":variables}), 'utf8')
+            fs.writeFileSync(path,JSON.stringify({"dictionary":stringdata,"variables":variables},null,2), 'utf8')
             } else{
                 return false
             }
