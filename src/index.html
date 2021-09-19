@@ -545,11 +545,6 @@
           data.push(k);
         }
       }
-      mng=[];
-      for (let i=0;i<data.length;i++){
-        let regex=new RegExp("[（\(].*[\)）]","gu");
-        mng.push(data[i].meaning.replace(regex,""))
-      }
       
       variables.alpord = document.getElementById("alpord").value;
         let alpdic = {};
