@@ -16,6 +16,7 @@
       "japanese-comparator.js",
       "main.js",
       "index.html",
+      "temp.txt",
       "package-lock.json",
       "preload.js"
     ],

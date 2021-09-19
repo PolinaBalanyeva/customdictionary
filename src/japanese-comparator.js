@@ -1,9 +1,8 @@
 const exec = require('child_process').execSync
 const isWindows = require('is-windows')
 let Encoding
-if (isWindows()) {
-  Encoding = require('encoding-japanese')
-}
+Encoding = require('encoding-japanese')
+const fs = require("fs")
 
 function hiraToKana(str) {
   return str.replace(/[\u3041-\u3096]/g, function(match) {
@@ -63,7 +62,21 @@ class JapaneseComparator {
     }
     return this.resultParser(result)
   }
-  kanjiToKana(str, noAutoCache) {
+  execCommandFile(str) {
+    const command = `cat ${str} | tr -d \r?\n | ${this.command}`
+    let result
+    if (this.detected) {
+      result = Encoding.convert(exec(command), {
+        from: this.detected,
+        type: 'string'
+      })
+    } else {
+      result = exec(command)
+    }
+    return this.resultParser(result)
+  }
+  kanjiToKana(str, noAutoCache,isfile) {
+    if (!isfile){
     str = str.trim()
     noAutoCache = noAutoCache || this.noAutoCache
     const cached = this.cache[str]
@@ -76,6 +89,10 @@ class JapaneseComparator {
       }
       return result
     }
+  } else{
+      const result = hiraToKana(this.execCommandFile(str))
+      return result
+    }
   }
   preprocess(list) {
     return list.map(s => s.trim())
@@ -85,10 +102,10 @@ class JapaneseComparator {
     let str1=""
     for (let i=0;i<list.length;i++){
       str1=str1+list[i]
-      if (i<list.length-1 && str1.length<=2000){
+      if (i<list.length-1 && str1.length<=6000){
         str1=str1+this.splitter
       } else {
-        const yomiAll = this.kanjiToKana(str1, true).split(this.splitter)
+        const yomiAll = this.kanjiToKana(str1, true,false).split(this.splitter)
         console.log(yomiAll)
         str1.split(this.splitter).forEach((str, i) => {
         this.cache[str] = yomiAll[i]
@@ -99,12 +116,28 @@ class JapaneseComparator {
     }
     
   }
+  createCacheFile(str1) {
+        const yomiAll = this.kanjiToKana(str1, true,true).split(this.splitter)
+        const buffer = fs.readFileSync(str1);
+        const text = Encoding.convert(buffer, {
+          from: 'SJIS',
+          type: 'string',
+        });
+        text.split(this.splitter).forEach((str, i) => {
+        this.cache[str] = yomiAll[i]
+        })
+    
+  }
   clearCache() {
     this.cache = {}
   }
-  get(list) {
-    if (!this.noAutoCache && list) {
+  get(list,isfile) {
+    if (!this.noAutoCache && list && !isfile) {
       this.createCache(list)
+    }
+    else if(!this.noAutoCache && list && isfile){
+      this.createCacheFile(list)
+      console.log(this.cache)
     }
     return (a, b) => compareKana(this.kanjiToKana(a), this.kanjiToKana(b))
   }

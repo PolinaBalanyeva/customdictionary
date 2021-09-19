@@ -550,12 +550,7 @@
         let regex=new RegExp("[（\(].*[\)）]","gu");
         mng.push(data[i].meaning.replace(regex,""))
       }
-      const comp=compare(mng);
-      mngs=mng.sort(comp)
-      mngo={}
-      for (let i=0;i<data.length;i++){
-        mngo[mngs[i]]=i
-      }
+      
       variables.alpord = document.getElementById("alpord").value;
         let alpdic = {};
         alpdic[" "]=0
@@ -598,10 +593,17 @@
       } else if (document.getElementById("seord").value=="id"){
         data.sort((ka, kb) => {return ka.id-kb.id});
       } else if (document.getElementById("seord").value=="mng"){
+        mng=[];
+        for (let i=0;i<data.length;i++){
+          let regex=new RegExp("[（\(].*[\)）]","gu");
+          mng.push(data[i].meaning.replace(regex,""))
+        }
+        window.api.setTxt(mng);
+        const comp=compare("./temp.txt",true);
         data.sort((ka, kb) => {
           let regex1=new RegExp("[（\(].*[\)）]","gu");
           let regex2=new RegExp("[（\(].*[\)）]","gu");
-            return comp(ka.meaning.replace(regex1,""),kb.meaning.replace(regex2,""))
+          return comp(ka.meaning.replace(regex1,""),kb.meaning.replace(regex2,""))
         });
       } 
 
